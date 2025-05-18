@@ -13,11 +13,13 @@
     .section { margin-top: 1.5rem; }
     .section h2 { margin-bottom: 0.5rem; font-size: 1.2rem; }
     .result-item { margin: 0.3rem 0; }
+    .version { margin-top: 0.5rem; font-size: 0.9rem; color: #666; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>A Leave Calculator</h1>
+    <p class="version" id="version-text">Version: 1.0 (2025-05-18)</p>
 
     <label for="start-date">Start Date:</label>
     <input id="start-date" type="text" placeholder="Select a date">
@@ -55,28 +57,53 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="./libs/holidays.js"></script>
   <script>
+    // Version info
+    const APP_VERSION = '1.0';
+    const BUILD_DATE = '2025-05-18';
+    document.getElementById('version-text').textContent = `Version: ${APP_VERSION} (${BUILD_DATE})`;
+
     const holidays = window.PUBLIC_HOLIDAYS;
     const holidayDates = holidays.map(h => h.date);
+
     function addBusinessDays(start, days) {
       let count = 0;
       const date = new Date(start);
       while (count < days) {
         date.setDate(date.getDate() + 1);
+        const iso = date.toISOString().slice(0,10);
         const d = date.getDay();
-        if (d === 0 || d === 6 || holidayDates.includes(date.toISOString().slice(0,10))) continue;
+        if (d === 0 || d === 6 || holidayDates.includes(iso)) continue;
         count++;
       }
       return date;
     }
+
     function addDays(start, days) {
       const date = new Date(start);
       date.setDate(date.getDate() + days);
       return date;
     }
+
+    function addLslDaysHalfPay(start, lsl) {
+      const targetHalfDays = lsl * 2;
+      let consumed = 0;
+      const date = new Date(start);
+      while (consumed < targetHalfDays) {
+        date.setDate(date.getDate() + 1);
+        const iso = date.toISOString().slice(0,10);
+        if (holidayDates.includes(iso)) {
+          consumed += 2;
+        } else {
+          consumed += 1;
+        }
+      }
+      return date;
+    }
+
     function fmt(date) {
       return date.toISOString().slice(0,10);
     }
-    // Attach to documentElement for full viewport
+
     flatpickr("#start-date", {
       dateFormat: "Y-m-d",
       defaultDate: new Date(),
@@ -87,27 +114,32 @@
     document.getElementById("calculate-btn").addEventListener("click", () => {
       const start = document.getElementById("start-date").value;
       if (!start) return alert('Please select a start date.');
-      const rec = parseInt(document.getElementById("rec-days").value,10)||0;
-      const lsl = parseInt(document.getElementById("lsl-days").value,10)||0;
+
+      const rec = parseInt(document.getElementById("rec-days").value,10) || 0;
+      const lsl = parseInt(document.getElementById("lsl-days").value,10) || 0;
+
       const fullRecEnd = addBusinessDays(start, rec);
       const fullLslEnd = addDays(start, lsl);
       const fullRecThenLsl = addDays(fmt(fullRecEnd), lsl);
       const fullLslThenRec = addBusinessDays(fmt(fullLslEnd), rec);
-      const halfRecEnd = addBusinessDays(start, rec*2);
-      const halfLslEnd = addDays(start, lsl*2);
-      const halfRecThenLsl = addDays(fmt(halfRecEnd), lsl*2);
-      const halfLslThenRec = addBusinessDays(fmt(halfLslEnd), rec*2);
+
+      const halfRecEnd = addBusinessDays(start, rec * 2);
+      const halfLslEnd = addLslDaysHalfPay(start, lsl);
+      const halfRecThenLsl = addLslDaysHalfPay(fmt(halfRecEnd), lsl);
+      const halfLslThenRec = addBusinessDays(fmt(halfLslEnd), rec * 2);
+
       document.getElementById("full-rec-end").textContent = fmt(fullRecEnd);
       document.getElementById("full-lsl-end").textContent = fmt(fullLslEnd);
       document.getElementById("full-rec-lsl-end").textContent = fmt(fullRecThenLsl);
       document.getElementById("full-lsl-rec-end").textContent = fmt(fullLslThenRec);
+
       document.getElementById("half-rec-end").textContent = fmt(halfRecEnd);
       document.getElementById("half-lsl-end").textContent = fmt(halfLslEnd);
       document.getElementById("half-rec-lsl-end").textContent = fmt(halfRecThenLsl);
       document.getElementById("half-lsl-rec-end").textContent = fmt(halfLslThenRec);
+
       const sorted = holidayDates.slice().sort();
-      const last = sorted.length ? sorted[sorted.length-1] : 'None';
-      document.getElementById("last-holiday-list").textContent = last;
+      document.getElementById("last-holiday-list").textContent = sorted.length ? sorted[sorted.length - 1] : 'None';
     });
   </script>
 </body>
