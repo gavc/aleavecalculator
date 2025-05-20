@@ -128,15 +128,11 @@
       }
       return date;
     }
-    }
 
     // Inclusive calendar‑day addition (counts the start day)
     const addCalendarDaysInclusive = (start, days) => {
       const date = new Date(start);
       date.setDate(date.getDate() + days - 1); // -1 so 1 day returns same date
-      return date;
-    };
-      date.setDate(date.getDate() + days);
       return date;
     };
 
@@ -156,7 +152,6 @@
         consumed += holidayDates.includes(iso) ? 2 : 1;
       }
       return date;
-    }
     }
 
     const formatDate = d => new Intl.DateTimeFormat('en-AU', { weekday:'short', day:'numeric', month:'short', year:'numeric'}).format(d);
@@ -204,10 +199,6 @@
       highlight(latestFull.id,'ring-indigo-400');
 
       /* --- HALF PAY CALCS --- */
-      const halfRecEnd       = addBusinessDays(start, rec*2);
-      const halfLslEnd       = addLslDaysHalfPay(start, lsl);
-      const halfRecThenLsl   = addLslDaysHalfPay(halfRecEnd, lsl);
-      const halfLslThenRec   = addBusinessDays(halfLslEnd, rec*2);
       const halfRecEnd       = addBusinessDays(start, rec*2);
       const halfLslEnd       = addLslDaysHalfPay(start, lsl);
       const halfRecThenLsl   = addLslDaysHalfPay(halfRecEnd, lsl);
