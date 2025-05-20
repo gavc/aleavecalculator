@@ -15,12 +15,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-    }
-    .flatpickr-calendar {
-      z-index: 50;
-    }
+    body { font-family: "Inter", sans-serif; }
+    .flatpickr-calendar { z-index: 50; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-sky-50 to-indigo-50 min-h-screen flex items-center justify-center p-4">
@@ -35,41 +31,21 @@
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="md:col-span-1">
         <label for="start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
-        <input
-          id="start-date"
-          type="text"
-          placeholder="Select date"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-        />
+        <input id="start-date" type="text" placeholder="Select date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
       </div>
       <div>
         <label for="rec-days" class="block text-sm font-medium text-gray-700">Rec Leave (Days)</label>
-        <input
-          id="rec-days"
-          type="number"
-          min="0"
-          value="0"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-        />
+        <input id="rec-days" type="number" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
       </div>
       <div>
         <label for="lsl-days" class="block text-sm font-medium text-gray-700">LSL Leave (Days)</label>
-        <input
-          id="lsl-days"
-          type="number"
-          min="0"
-          value="0"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-        />
+        <input id="lsl-days" type="number" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
       </div>
     </section>
 
     <!-- action -->
     <div class="text-center">
-      <button
-        id="calculate-btn"
-        class="inline-flex items-center justify-center gap-2 px-8 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition"
-      >
+      <button id="calculate-btn" class="inline-flex items-center justify-center gap-2 px-8 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition">
         Calculate
       </button>
     </div>
@@ -88,6 +64,7 @@
           <li class="flex items-center justify-between gap-4"><span>Rec → LSL End</span><time id="full-rec-lsl-end" class="date-pill">-</time></li>
           <li class="flex items-center justify-between gap-4"><span>LSL → Rec End</span><time id="full-lsl-rec-end" class="date-pill">-</time></li>
         </ul>
+        <p class="mt-3 text-sm text-indigo-700">Longest full‑pay option: <time id="full-latest" class="date-pill">-</time> (<span id="full-latest-label">-</span>)</p>
       </section>
 
       <!-- half pay -->
@@ -102,6 +79,7 @@
           <li class="flex items-center justify-between gap-4"><span>Rec → LSL End</span><time id="half-rec-lsl-end" class="date-pill">-</time></li>
           <li class="flex items-center justify-between gap-4"><span>LSL → Rec End</span><time id="half-lsl-rec-end" class="date-pill">-</time></li>
         </ul>
+        <p class="mt-3 text-sm text-teal-700">Longest half‑pay option: <time id="half-latest" class="date-pill">-</time> (<span id="half-latest-label">-</span>)</p>
       </section>
 
       <!-- note -->
@@ -116,23 +94,24 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="./libs/holidays.js"></script>
   <script>
-    // util class for pill styling (Tailwind can't add at runtime easily)
+    /* --- style util for date pills --- */
     document.head.insertAdjacentHTML('beforeend', `<style>.date-pill{display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;background:#EEF2FF;color:#4338CA;font-size:0.875rem;font-weight:600}</style>`);
 
-    const APP_VERSION = '1.2';
+    const APP_VERSION = '1.4';
     const BUILD_DATE = '2025-05-20';
     document.getElementById('version-text').textContent = `Version ${APP_VERSION} • ${BUILD_DATE}`;
 
+    /* ---- holiday data ---- */
     const holidays = window.PUBLIC_HOLIDAYS || [];
-    const holidayDates = holidays.map((h) => h.date);
+    const holidayDates = holidays.map(h => h.date);
 
-    /* Helpers */
+    /* ---- date helpers ---- */
     function addBusinessDays(start, days) {
       let count = 0;
       const date = new Date(start);
       while (count < days) {
         date.setDate(date.getDate() + 1);
-        const iso = date.toISOString().slice(0, 10);
+        const iso = date.toISOString().slice(0,10);
         const d = date.getDay();
         if (d === 0 || d === 6 || holidayDates.includes(iso)) continue;
         count++;
@@ -147,62 +126,89 @@
     };
 
     function addLslDaysHalfPay(start, lsl) {
-      const targetHalfDays = lsl * 2;
+      const targetHalfDays = lsl * 2; // double days counted
       let consumed = 0;
       const date = new Date(start);
       while (consumed < targetHalfDays) {
         date.setDate(date.getDate() + 1);
-        const iso = date.toISOString().slice(0, 10);
-        holidayDates.includes(iso) ? (consumed += 2) : consumed++;
+        const iso = date.toISOString().slice(0,10);
+        holidayDates.includes(iso) ? consumed += 2 : consumed += 1;
       }
       return date;
     }
 
-    const formatDate = (d) =>
-      new Intl.DateTimeFormat('en-AU', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }).format(d);
+    const formatDate = d => new Intl.DateTimeFormat('en-AU', { weekday:'short', day:'numeric', month:'short', year:'numeric'}).format(d);
 
-    /* Flatpickr */
-    flatpickr('#start-date', { dateFormat: 'Y-m-d', defaultDate: new Date() });
+    /* ---- highlight helpers ---- */
+    function clearHighlights(ids) {
+      ids.forEach(id => document.getElementById(id).classList.remove('ring','ring-2','ring-offset-2','ring-indigo-400','ring-teal-400'));
+    }
+    function highlight(id, colorClass) {
+      document.getElementById(id).classList.add('ring','ring-2','ring-offset-2',colorClass);
+    }
 
-    /* Main calc */
+    /* ---- init flatpickr ---- */
+    flatpickr('#start-date',{ dateFormat:'Y-m-d', defaultDate: new Date() });
+
+    /* ---- main calc ---- */
     document.getElementById('calculate-btn').addEventListener('click', () => {
       const start = document.getElementById('start-date').value;
-      if (!start) return alert('Please select a start date.');
+      if(!start) return alert('Please select a start date.');
 
-      const rec = parseInt(document.getElementById('rec-days').value, 10) || 0;
-      const lsl = parseInt(document.getElementById('lsl-days').value, 10) || 0;
+      const rec = parseInt(document.getElementById('rec-days').value,10) || 0;
+      const lsl = parseInt(document.getElementById('lsl-days').value,10) || 0;
 
-      /* Full pay */
-      const fullRecEnd = addBusinessDays(start, rec);
-      const fullLslEnd = addDays(start, lsl);
-      const fullRecThenLsl = addDays(fullRecEnd, lsl);
-      const fullLslThenRec = addBusinessDays(fullLslEnd, rec);
+      /* --- FULL PAY CALCS --- */
+      const fullRecEnd       = addBusinessDays(start, rec);
+      const fullLslEnd       = addDays(start, lsl);
+      const fullRecThenLsl   = addDays(fullRecEnd, lsl);
+      const fullLslThenRec   = addBusinessDays(fullLslEnd, rec);
 
-      /* Half pay */
-      const halfRecEnd = addBusinessDays(start, rec * 2);
-      const halfLslEnd = addLslDaysHalfPay(start, lsl);
-      const halfRecThenLsl = addLslDaysHalfPay(halfRecEnd, lsl);
-      const halfLslThenRec = addBusinessDays(halfLslEnd, rec * 2);
+      document.getElementById('full-rec-end').textContent      = formatDate(fullRecEnd);
+      document.getElementById('full-lsl-end').textContent      = formatDate(fullLslEnd);
+      document.getElementById('full-rec-lsl-end').textContent  = formatDate(fullRecThenLsl);
+      document.getElementById('full-lsl-rec-end').textContent  = formatDate(fullLslThenRec);
 
-      /* Populate */
-      document.getElementById('full-rec-end').textContent = formatDate(fullRecEnd);
-      document.getElementById('full-lsl-end').textContent = formatDate(fullLslEnd);
-      document.getElementById('full-rec-lsl-end').textContent = formatDate(fullRecThenLsl);
-      document.getElementById('full-lsl-rec-end').textContent = formatDate(fullLslThenRec);
+      const fullOptions = [
+        {id:'full-rec-end',      label:'Rec Only',      date:fullRecEnd},
+        {id:'full-lsl-end',      label:'LSL Only',      date:fullLslEnd},
+        {id:'full-rec-lsl-end',  label:'Rec → LSL',     date:fullRecThenLsl},
+        {id:'full-lsl-rec-end',  label:'LSL → Rec',     date:fullLslThenRec},
+      ];
+      const latestFull = fullOptions.reduce((max,o) => o.date > max.date ? o : max, fullOptions[0]);
+      document.getElementById('full-latest').textContent = formatDate(latestFull.date);
+      document.getElementById('full-latest-label').textContent = latestFull.label;
+      clearHighlights(fullOptions.map(o=>o.id));
+      highlight(latestFull.id,'ring-indigo-400');
 
-      document.getElementById('half-rec-end').textContent = formatDate(halfRecEnd);
-      document.getElementById('half-lsl-end').textContent = formatDate(halfLslEnd);
-      document.getElementById('half-rec-lsl-end').textContent = formatDate(halfRecThenLsl);
-      document.getElementById('half-lsl-rec-end').textContent = formatDate(halfLslThenRec);
+      /* --- HALF PAY CALCS --- */
+      const halfRecEnd       = addBusinessDays(start, rec*2);
+      const halfLslEnd       = addLslDaysHalfPay(start, lsl);
+      const halfRecThenLsl   = addLslDaysHalfPay(halfRecEnd, lsl);
+      const halfLslThenRec   = addBusinessDays(halfLslEnd, rec*2);
 
-      const sorted = holidayDates.slice().sort();
-      document.getElementById('last-holiday-list').textContent = sorted.length ? sorted[sorted.length - 1] : 'None';
+      document.getElementById('half-rec-end').textContent      = formatDate(halfRecEnd);
+      document.getElementById('half-lsl-end').textContent      = formatDate(halfLslEnd);
+      document.getElementById('half-rec-lsl-end').textContent  = formatDate(halfRecThenLsl);
+      document.getElementById('half-lsl-rec-end').textContent  = formatDate(halfLslThenRec);
 
+      const halfOptions = [
+        {id:'half-rec-end',     label:'Rec Only',     date:halfRecEnd},
+        {id:'half-lsl-end',     label:'LSL Only',     date:halfLslEnd},
+        {id:'half-rec-lsl-end', label:'Rec → LSL',    date:halfRecThenLsl},
+        {id:'half-lsl-rec-end', label:'LSL → Rec',    date:halfLslThenRec},
+      ];
+      const latestHalf = halfOptions.reduce((max,o) => o.date > max.date ? o : max, halfOptions[0]);
+      document.getElementById('half-latest').textContent = formatDate(latestHalf.date);
+      document.getElementById('half-latest-label').textContent = latestHalf.label;
+      clearHighlights(halfOptions.map(o=>o.id));
+      highlight(latestHalf.id,'ring-teal-400');
+
+      /* --- footer info --- */
+      const sortedHolidays = holidayDates.slice().sort();
+      document.getElementById('last-holiday-list').textContent = sortedHolidays.length ? sortedHolidays[sortedHolidays.length-1] : 'None';
+
+      /* reveal results */
       document.getElementById('results').classList.remove('hidden');
     });
   </script>
