@@ -107,34 +107,56 @@
 
     /* ---- date helpers ---- */
     function addBusinessDays(start, days) {
+      // Inclusive: count the start and last day
       let count = 0;
       const date = new Date(start);
+
+      // First, decide if the start date itself is a business day
+      const isoStart = date.toISOString().slice(0, 10);
+      const dowStart = date.getDay();
+      if (!(dowStart === 0 || dowStart === 6 || holidayDates.includes(isoStart))) {
+        count = 1; // start day counts
+      }
+
+      // Walk forward until we've tallied the requested number of business days
       while (count < days) {
         date.setDate(date.getDate() + 1);
-        const iso = date.toISOString().slice(0,10);
-        const d = date.getDay();
-        if (d === 0 || d === 6 || holidayDates.includes(iso)) continue;
+        const iso = date.toISOString().slice(0, 10);
+        const dow = date.getDay();
+        if (dow === 0 || dow === 6 || holidayDates.includes(iso)) continue; // skip non‑business days
         count++;
       }
       return date;
     }
+    }
 
-    const addDays = (start, days) => {
+    // Inclusive calendar‑day addition (counts the start day)
+    const addCalendarDaysInclusive = (start, days) => {
       const date = new Date(start);
+      date.setDate(date.getDate() + days - 1); // -1 so 1 day returns same date
+      return date;
+    };
       date.setDate(date.getDate() + days);
       return date;
     };
 
     function addLslDaysHalfPay(start, lsl) {
-      const targetHalfDays = lsl * 2; // double days counted
+      // Inclusive half‑pay logic: start day counts.
+      const targetHalfUnits = lsl * 2; // entitlement units
       let consumed = 0;
       const date = new Date(start);
-      while (consumed < targetHalfDays) {
+
+      // count the start day first
+      const isoStart = date.toISOString().slice(0,10);
+      consumed += holidayDates.includes(isoStart) ? 2 : 1; // holiday burns full day (2 units)
+
+      while (consumed < targetHalfUnits) {
         date.setDate(date.getDate() + 1);
         const iso = date.toISOString().slice(0,10);
-        holidayDates.includes(iso) ? consumed += 2 : consumed += 1;
+        consumed += holidayDates.includes(iso) ? 2 : 1;
       }
       return date;
+    }
     }
 
     const formatDate = d => new Intl.DateTimeFormat('en-AU', { weekday:'short', day:'numeric', month:'short', year:'numeric'}).format(d);
@@ -160,8 +182,8 @@
 
       /* --- FULL PAY CALCS --- */
       const fullRecEnd       = addBusinessDays(start, rec);
-      const fullLslEnd       = addDays(start, lsl);
-      const fullRecThenLsl   = addDays(fullRecEnd, lsl);
+      const fullLslEnd       = addCalendarDaysInclusive(start, lsl);
+      const fullRecThenLsl   = addCalendarDaysInclusive(fullRecEnd, lsl);
       const fullLslThenRec   = addBusinessDays(fullLslEnd, rec);
 
       document.getElementById('full-rec-end').textContent      = formatDate(fullRecEnd);
@@ -182,6 +204,10 @@
       highlight(latestFull.id,'ring-indigo-400');
 
       /* --- HALF PAY CALCS --- */
+      const halfRecEnd       = addBusinessDays(start, rec*2);
+      const halfLslEnd       = addLslDaysHalfPay(start, lsl);
+      const halfRecThenLsl   = addLslDaysHalfPay(halfRecEnd, lsl);
+      const halfLslThenRec   = addBusinessDays(halfLslEnd, rec*2);
       const halfRecEnd       = addBusinessDays(start, rec*2);
       const halfLslEnd       = addLslDaysHalfPay(start, lsl);
       const halfRecThenLsl   = addLslDaysHalfPay(halfRecEnd, lsl);
