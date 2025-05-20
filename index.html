@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Leave Calculator</title>
 
-  <!-- Google Font & Tailwind via CDN for quick, no‑build styling -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Font & Tailwind via CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flatpickr date‑picker -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    /* keep calendar above everything */
-    .flatpickr-calendar { z-index: 50; }
+    body {
+      font-family: "Inter", sans-serif;
+    }
+    .flatpickr-calendar {
+      z-index: 50;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-sky-50 to-indigo-50 min-h-screen flex items-center justify-center p-4">
-  <main class="w-full max-w-2xl bg-white rounded-2xl shadow-xl ring-1 ring-indigo-100 p-8 space-y-8">
+  <main class="w-full max-w-2xl bg-white rounded-2xl shadow-xl ring-1 ring-indigo-100 p-8 space-y-10">
     <!-- header -->
     <header class="text-center">
       <h1 class="text-3xl font-semibold text-indigo-600 mb-1">Leave Calculator</h1>
@@ -29,50 +32,79 @@
     </header>
 
     <!-- inputs -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-1">
         <label for="start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
-        <input id="start-date" type="text" placeholder="Select date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <input
+          id="start-date"
+          type="text"
+          placeholder="Select date"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
       </div>
       <div>
-        <label for="rec-days" class="block text-sm font-medium text-gray-700">Recreation Leave (Days)</label>
-        <input id="rec-days" type="number" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <label for="rec-days" class="block text-sm font-medium text-gray-700">Rec Leave (Days)</label>
+        <input
+          id="rec-days"
+          type="number"
+          min="0"
+          value="0"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
       </div>
       <div>
-        <label for="lsl-days" class="block text-sm font-medium text-gray-700">Long Service Leave (Days)</label>
-        <input id="lsl-days" type="number" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <label for="lsl-days" class="block text-sm font-medium text-gray-700">LSL Leave (Days)</label>
+        <input
+          id="lsl-days"
+          type="number"
+          min="0"
+          value="0"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
       </div>
     </section>
 
     <!-- action -->
     <div class="text-center">
-      <button id="calculate-btn" class="inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition">
+      <button
+        id="calculate-btn"
+        class="inline-flex items-center justify-center gap-2 px-8 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition"
+      >
         Calculate
       </button>
     </div>
 
     <!-- results -->
-    <div id="results" class="space-y-10 hidden">
+    <div id="results" class="space-y-12 hidden">
+      <!-- full pay -->
       <section>
-        <h2 class="text-xl font-semibold text-indigo-600 mb-4">Full Pay</h2>
+        <h2 class="text-xl font-semibold text-indigo-600 mb-4 flex items-center gap-2">
+          <span>Full Pay</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">100%</span>
+        </h2>
         <ul class="space-y-2">
-          <li class="flex justify-between"><span>Rec Only End</span><span id="full-rec-end" class="font-semibold text-gray-700">-</span></li>
-          <li class="flex justify-between"><span>LSL Only End</span><span id="full-lsl-end" class="font-semibold text-gray-700">-</span></li>
-          <li class="flex justify-between"><span>Rec → LSL End</span><span id="full-rec-lsl-end" class="font-semibold text-gray-700">-</span></li>
-          <li class="flex justify-between"><span>LSL → Rec End</span><span id="full-lsl-rec-end" class="font-semibold text-gray-700">-</span></li>
+          <li class="flex items-center justify-between gap-4"><span>Rec Only End</span><time id="full-rec-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span>LSL Only End</span><time id="full-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span>Rec → LSL End</span><time id="full-rec-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span>LSL → Rec End</span><time id="full-lsl-rec-end" class="date-pill">-</time></li>
         </ul>
       </section>
 
+      <!-- half pay -->
       <section>
-        <h2 class="text-xl font-semibold text-indigo-600 mb-4">Half Pay (double days)</h2>
+        <h2 class="text-xl font-semibold text-indigo-600 mb-4 flex items-center gap-2">
+          <span>Half Pay</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700">50%</span>
+        </h2>
         <ul class="space-y-2">
-          <li class="flex justify-between"><span>Rec Only End</span><span id="half-rec-end" class="font-semibold text-gray-700">-</span></li>
-          <li class="flex justify-between"><span>LSL Only End</span><span id="half-lsl-end" class="font-semibold text-gray-700">-</span></li>
-          <li class="flex justify-between"><span>Rec → LSL End</span><span id="half-rec-lsl-end" class="font-semibold text-gray-700">-</span></li>
-          <li class="flex justify-between"><span>LSL → Rec End</span><span id="half-lsl-rec-end" class="font-semibold text-gray-700">-</span></li>
+          <li class="flex items-center justify-between gap-4"><span>Rec Only End</span><time id="half-rec-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span>LSL Only End</span><time id="half-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span>Rec → LSL End</span><time id="half-rec-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span>LSL → Rec End</span><time id="half-lsl-rec-end" class="date-pill">-</time></li>
         </ul>
       </section>
 
+      <!-- note -->
       <section>
         <h2 class="text-xl font-semibold text-indigo-600 mb-4">Note</h2>
         <p>Last public holiday included: <span id="last-holiday-list" class="font-medium text-gray-700">-</span></p>
@@ -84,19 +116,23 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="./libs/holidays.js"></script>
   <script>
-    const APP_VERSION = '1.1';
+    // util class for pill styling (Tailwind can't add at runtime easily)
+    document.head.insertAdjacentHTML('beforeend', `<style>.date-pill{display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;background:#EEF2FF;color:#4338CA;font-size:0.875rem;font-weight:600}</style>`);
+
+    const APP_VERSION = '1.2';
     const BUILD_DATE = '2025-05-20';
-    document.getElementById('version-text').textContent = `Version ${APP_VERSION} – ${BUILD_DATE}`;
+    document.getElementById('version-text').textContent = `Version ${APP_VERSION} • ${BUILD_DATE}`;
 
     const holidays = window.PUBLIC_HOLIDAYS || [];
-    const holidayDates = holidays.map(h => h.date);
+    const holidayDates = holidays.map((h) => h.date);
 
+    /* Helpers */
     function addBusinessDays(start, days) {
       let count = 0;
       const date = new Date(start);
       while (count < days) {
         date.setDate(date.getDate() + 1);
-        const iso = date.toISOString().slice(0,10);
+        const iso = date.toISOString().slice(0, 10);
         const d = date.getDay();
         if (d === 0 || d === 6 || holidayDates.includes(iso)) continue;
         count++;
@@ -104,7 +140,11 @@
       return date;
     }
 
-    const addDays = (start, days) => new Date(new Date(start).setDate(new Date(start).getDate() + days));
+    const addDays = (start, days) => {
+      const date = new Date(start);
+      date.setDate(date.getDate() + days);
+      return date;
+    };
 
     function addLslDaysHalfPay(start, lsl) {
       const targetHalfDays = lsl * 2;
@@ -112,16 +152,24 @@
       const date = new Date(start);
       while (consumed < targetHalfDays) {
         date.setDate(date.getDate() + 1);
-        const iso = date.toISOString().slice(0,10);
-        holidayDates.includes(iso) ? consumed += 2 : consumed += 1;
+        const iso = date.toISOString().slice(0, 10);
+        holidayDates.includes(iso) ? (consumed += 2) : consumed++;
       }
       return date;
     }
 
-    const fmt = (date) => date.toISOString().slice(0,10);
+    const formatDate = (d) =>
+      new Intl.DateTimeFormat('en-AU', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }).format(d);
 
+    /* Flatpickr */
     flatpickr('#start-date', { dateFormat: 'Y-m-d', defaultDate: new Date() });
 
+    /* Main calc */
     document.getElementById('calculate-btn').addEventListener('click', () => {
       const start = document.getElementById('start-date').value;
       if (!start) return alert('Please select a start date.');
@@ -129,25 +177,28 @@
       const rec = parseInt(document.getElementById('rec-days').value, 10) || 0;
       const lsl = parseInt(document.getElementById('lsl-days').value, 10) || 0;
 
+      /* Full pay */
       const fullRecEnd = addBusinessDays(start, rec);
       const fullLslEnd = addDays(start, lsl);
-      const fullRecThenLsl = addDays(fmt(fullRecEnd), lsl);
-      const fullLslThenRec = addBusinessDays(fmt(fullLslEnd), rec);
+      const fullRecThenLsl = addDays(fullRecEnd, lsl);
+      const fullLslThenRec = addBusinessDays(fullLslEnd, rec);
 
+      /* Half pay */
       const halfRecEnd = addBusinessDays(start, rec * 2);
       const halfLslEnd = addLslDaysHalfPay(start, lsl);
-      const halfRecThenLsl = addLslDaysHalfPay(fmt(halfRecEnd), lsl);
-      const halfLslThenRec = addBusinessDays(fmt(halfLslEnd), rec * 2);
+      const halfRecThenLsl = addLslDaysHalfPay(halfRecEnd, lsl);
+      const halfLslThenRec = addBusinessDays(halfLslEnd, rec * 2);
 
-      document.getElementById('full-rec-end').textContent = fmt(fullRecEnd);
-      document.getElementById('full-lsl-end').textContent = fmt(fullLslEnd);
-      document.getElementById('full-rec-lsl-end').textContent = fmt(fullRecThenLsl);
-      document.getElementById('full-lsl-rec-end').textContent = fmt(fullLslThenRec);
+      /* Populate */
+      document.getElementById('full-rec-end').textContent = formatDate(fullRecEnd);
+      document.getElementById('full-lsl-end').textContent = formatDate(fullLslEnd);
+      document.getElementById('full-rec-lsl-end').textContent = formatDate(fullRecThenLsl);
+      document.getElementById('full-lsl-rec-end').textContent = formatDate(fullLslThenRec);
 
-      document.getElementById('half-rec-end').textContent = fmt(halfRecEnd);
-      document.getElementById('half-lsl-end').textContent = fmt(halfLslEnd);
-      document.getElementById('half-rec-lsl-end').textContent = fmt(halfRecThenLsl);
-      document.getElementById('half-lsl-rec-end').textContent = fmt(halfLslThenRec);
+      document.getElementById('half-rec-end').textContent = formatDate(halfRecEnd);
+      document.getElementById('half-lsl-end').textContent = formatDate(halfLslEnd);
+      document.getElementById('half-rec-lsl-end').textContent = formatDate(halfRecThenLsl);
+      document.getElementById('half-lsl-rec-end').textContent = formatDate(halfLslThenRec);
 
       const sorted = holidayDates.slice().sort();
       document.getElementById('last-holiday-list').textContent = sorted.length ? sorted[sorted.length - 1] : 'None';
