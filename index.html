@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
 
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
@@ -17,35 +18,74 @@
   <style>
     body { font-family: "Inter", sans-serif; }
     .flatpickr-calendar { z-index: 50; }
+    /* Info tooltip */
+    .info-icon { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem; border-radius: 9999px; background: #c7d2fe; color: #3730a3; font-size: 0.65rem; font-weight: 700; cursor: default; flex-shrink: 0; }
+    .info-icon::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1e1b4b; color: #fff; font-size: 0.75rem; font-weight: 400; white-space: pre-wrap; width: 220px; padding: 0.5rem 0.65rem; border-radius: 0.5rem; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; line-height: 1.4; }
+    .info-icon:hover::after, .info-icon:focus::after { opacity: 1; }
+    /* Dark mode overrides */
+    .dark .date-pill { background: #312e81; color: #c7d2fe; }
+    .dark .info-icon { background: #4338ca; color: #e0e7ff; }
+    .dark .flatpickr-input { background: #374151 !important; color: #f3f4f6 !important; border-color: #4b5563 !important; }
+    /* Beast mode calendar day colours */
+    .beast-day  { text-align:center; border-radius:0.25rem; padding:0.15rem; font-size:0.7rem; cursor:default; }
+    .beast-rec  { background:#c7d2fe; color:#1e1b4b; font-weight:600; }
+    .beast-lsl  { background:#5eead4; color:#042f2e; font-weight:600; }
+    .beast-wknd { background:#f3f4f6; color:#6b7280; }
+    .beast-ph   { background:#fde68a; color:#451a03; font-weight:700; }
+    .dark .beast-rec  { background:#3730a3; color:#e0e7ff; }
+    .dark .beast-lsl  { background:#0f766e; color:#ccfbf1; }
+    .dark .beast-wknd { background:#374151; color:#9ca3af; }
+    .dark .beast-ph   { background:#92400e; color:#fef3c7; }
   </style>
 </head>
-<body class="bg-gradient-to-br from-sky-50 to-indigo-50 min-h-screen flex items-center justify-center p-4">
-  <main class="w-full max-w-2xl bg-white rounded-2xl shadow-xl ring-1 ring-indigo-100 p-8 space-y-10">
+<body class="bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-slate-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-200">
+  <main class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl ring-1 ring-indigo-100 dark:ring-gray-700 p-8 space-y-10">
     <!-- header -->
-    <header class="text-center">
-      <h1 class="text-3xl font-semibold text-indigo-600 mb-1">Leave Calculator</h1>
-      <p id="version-text" class="text-sm text-gray-500"></p>
+    <header class="text-center relative">
+      <button id="theme-toggle" title="Toggle light/dark mode" aria-label="Toggle dark mode"
+        class="absolute right-0 top-0 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        <!-- moon: shown in light mode -->
+        <svg id="icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <!-- sun: shown in dark mode -->
+        <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+      <h1 class="text-3xl font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Leave Calculator</h1>
+      <p id="version-text" class="text-sm text-gray-500 dark:text-gray-400"></p>
     </header>
 
     <!-- inputs -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="md:col-span-1">
-        <label for="start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
-        <input id="start-date" type="text" placeholder="Select date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <label for="start-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+        <input id="start-date" type="text" placeholder="Select date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
       </div>
       <div>
-        <label for="rec-days" class="block text-sm font-medium text-gray-700">Rec Leave (Days)</label>
-        <input id="rec-days" type="number" min="0" step="1" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <label for="rec-days" class="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+          Rec Leave (Days)
+          <span class="info-icon" tabindex="0"
+            data-tip="Recreational leave is counted in business days — weekends and Queensland public holidays are skipped and do not consume your entitlement.">i</span>
+        </label>
+        <input id="rec-days" type="number" min="0" step="1" value="0" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
       </div>
       <div>
-        <label for="lsl-days" class="block text-sm font-medium text-gray-700">LSL Leave (Days)</label>
-        <input id="lsl-days" type="number" min="0" step="1" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <label for="lsl-days" class="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+          LSL Leave (Days)
+          <span class="info-icon" tabindex="0"
+            data-tip="Long service leave is exclusive of public holidays (Directive 10/24). Full pay: calendar days, holidays skipped. Half pay: doubled calendar days, holidays still skipped and paid at full rate. Minimum period is 7 days.">i</span>
+        </label>
+        <input id="lsl-days" type="number" min="0" step="1" value="0" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <p id="lsl-warning" class="hidden mt-1 text-xs text-amber-600 dark:text-amber-400">&#9888; LSL minimum period is 7 days — results may not reflect a valid leave arrangement.</p>
       </div>
     </section>
 
     <!-- action -->
     <div class="text-center">
-      <button id="calculate-btn" class="inline-flex items-center justify-center gap-2 px-8 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition">
+      <button id="calculate-btn" class="inline-flex items-center justify-center gap-2 px-8 py-2 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition">
         Calculate
       </button>
     </div>
@@ -54,39 +94,57 @@
     <div id="results" class="space-y-12 hidden">
       <!-- full pay -->
       <section>
-        <h2 class="text-xl font-semibold text-indigo-600 mb-4 flex items-center gap-2">
+        <h2 class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
           <span>Full Pay</span>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">100%</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">100%</span>
         </h2>
         <ul class="space-y-2">
-          <li class="flex items-center justify-between gap-4"><span>Rec Only End</span><time id="full-rec-end" class="date-pill">-</time></li>
-          <li class="flex items-center justify-between gap-4"><span>LSL Only End</span><time id="full-lsl-end" class="date-pill">-</time></li>
-          <li class="flex items-center justify-between gap-4"><span>Rec → LSL End</span><time id="full-rec-lsl-end" class="date-pill">-</time></li>
-          <li class="flex items-center justify-between gap-4"><span>LSL → Rec End</span><time id="full-lsl-rec-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">Rec Only End</span><time id="full-rec-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">LSL Only End</span><time id="full-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">Rec → LSL End</span><time id="full-rec-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">LSL → Rec End</span><time id="full-lsl-rec-end" class="date-pill">-</time></li>
         </ul>
-        <p class="mt-3 text-sm text-indigo-700">Longest full‑pay option: <time id="full-latest" class="date-pill">-</time> (<span id="full-latest-label">-</span>)</p>
+        <p class="mt-3 text-sm text-indigo-700 dark:text-indigo-400">Longest full‑pay option: <time id="full-latest" class="date-pill">-</time> (<span id="full-latest-label">-</span>)</p>
       </section>
 
       <!-- half pay -->
       <section>
-        <h2 class="text-xl font-semibold text-indigo-600 mb-4 flex items-center gap-2">
+        <h2 class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
           <span>Half Pay</span>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700">50%</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300">50%</span>
         </h2>
         <ul class="space-y-2">
-          <li class="flex items-center justify-between gap-4"><span>Rec Only End</span><time id="half-rec-end" class="date-pill">-</time></li>
-          <li class="flex items-center justify-between gap-4"><span>LSL Only End</span><time id="half-lsl-end" class="date-pill">-</time></li>
-          <li class="flex items-center justify-between gap-4"><span>Rec → LSL End</span><time id="half-rec-lsl-end" class="date-pill">-</time></li>
-          <li class="flex items-center justify-between gap-4"><span>LSL → Rec End</span><time id="half-lsl-rec-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">Rec Only End</span><time id="half-rec-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">LSL Only End</span><time id="half-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">Rec → LSL End</span><time id="half-rec-lsl-end" class="date-pill">-</time></li>
+          <li class="flex items-center justify-between gap-4"><span class="text-gray-700 dark:text-gray-300">LSL → Rec End</span><time id="half-lsl-rec-end" class="date-pill">-</time></li>
         </ul>
-        <p class="mt-3 text-sm text-teal-700">Longest half‑pay option: <time id="half-latest" class="date-pill">-</time> (<span id="half-latest-label">-</span>)</p>
+        <p class="mt-3 text-sm text-teal-700 dark:text-teal-400">Longest half‑pay option: <time id="half-latest" class="date-pill">-</time> (<span id="half-latest-label">-</span>)</p>
       </section>
 
       <!-- note -->
       <section>
-        <h2 class="text-xl font-semibold text-indigo-600 mb-4">Note</h2>
-        <p>Last public holiday included: <span id="last-holiday-list" class="font-medium text-gray-700">-</span></p>
-        <p class="mt-1">Holiday data coverage: <span id="holiday-range-list" class="font-medium text-gray-700">-</span></p>
+        <h2 class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4">Note</h2>
+        <p class="text-gray-700 dark:text-gray-300">Last public holiday included: <span id="last-holiday-list" class="font-medium text-gray-900 dark:text-gray-100">-</span></p>
+        <p class="mt-1 text-gray-700 dark:text-gray-300">Holiday data coverage: <span id="holiday-range-list" class="font-medium text-gray-900 dark:text-gray-100">-</span></p>
+      </section>
+
+      <!-- beast mode -->
+      <section>
+        <h2 class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-1 flex items-center gap-2">
+          <span>Beast Mode</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300">Full Pay Calendar</span>
+        </h2>
+        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">Day-by-day view &mdash; see exactly which days consume which leave type and where public holidays fall free.</p>
+        <div id="beast-tabs" class="flex gap-2 flex-wrap mb-3"></div>
+        <div class="flex gap-4 flex-wrap text-xs text-gray-600 dark:text-gray-400 mb-2">
+          <span class="flex items-center gap-1.5"><span class="beast-day beast-rec" style="display:inline-block;width:0.9rem;height:0.9rem"></span>REC</span>
+          <span class="flex items-center gap-1.5"><span class="beast-day beast-lsl" style="display:inline-block;width:0.9rem;height:0.9rem"></span>LSL (incl. weekends)</span>
+          <span class="flex items-center gap-1.5"><span class="beast-day beast-wknd" style="display:inline-block;width:0.9rem;height:0.9rem"></span>Weekend (no leave used)</span>
+          <span class="flex items-center gap-1.5"><span class="beast-day beast-ph" style="display:inline-block;width:0.9rem;height:0.9rem"></span>Public Holiday (free)</span>
+        </div>
+        <p id="beast-summary" class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300"></p>
+        <div id="beast-calendar" class="space-y-5"></div>
       </section>
     </div>
   </main>
@@ -98,8 +156,116 @@
     /* --- style util for date pills --- */
     document.head.insertAdjacentHTML('beforeend', `<style>.date-pill{display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;background:#EEF2FF;color:#4338CA;font-size:0.875rem;font-weight:600}</style>`);
 
-    const APP_VERSION = '1.5';
-    const BUILD_DATE = '18/02/2026';
+    /* --- dark mode toggle --- */
+    (function () {
+      const html = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      const iconMoon = document.getElementById('icon-moon');
+      const iconSun  = document.getElementById('icon-sun');
+
+      function applyTheme(dark) {
+        html.classList.toggle('dark', dark);
+        iconMoon.classList.toggle('hidden', dark);   // moon visible in light mode
+        iconSun.classList.toggle('hidden',  !dark);  // sun visible in dark mode
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+      }
+
+      const saved = localStorage.getItem('theme');
+      applyTheme(saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches));
+      toggle.addEventListener('click', () => applyTheme(!html.classList.contains('dark')));
+    })();
+
+    /* ---- beast mode ---- */
+    let _beast = null;
+    const BEAST_LABELS = { rec:'REC', lsl:'LSL (incl. weekend)', wknd:'Weekend (no leave used)', ph:'Public Holiday (free)' };
+
+    function beastDayType(date, scenario) {
+      const { fullRecEnd, fullLslEnd, recIsZero, lslIsZero } = _beast;
+      const isPH   = holidayDateSet.has(toIsoDate(date));
+      const isWknd = date.getDay() === 0 || date.getDay() === 6;
+      if (scenario === 'rec-only') return isPH ? 'ph' : isWknd ? 'wknd' : 'rec';
+      if (scenario === 'lsl-only') return isPH ? 'ph' : 'lsl';
+      if (scenario === 'rec-lsl') {
+        if (!recIsZero && date <= fullRecEnd) return isPH ? 'ph' : isWknd ? 'wknd' : 'rec';
+        return isPH ? 'ph' : 'lsl';
+      }
+      // lsl-rec
+      if (!lslIsZero && date <= fullLslEnd) return isPH ? 'ph' : 'lsl';
+      return isPH ? 'ph' : isWknd ? 'wknd' : 'rec';
+    }
+
+    function renderBeastCalendar(scenario) {
+      if (!_beast) return;
+      const ends = { 'rec-only':_beast.fullRecEnd, 'lsl-only':_beast.fullLslEnd, 'rec-lsl':_beast.fullRecThenLsl, 'lsl-rec':_beast.fullLslThenRec };
+      const { startDate } = _beast;
+      const endDate = ends[scenario];
+      if (!endDate || endDate < startDate) return;
+
+      const totalDays = Math.round((endDate - startDate) / 86400000) + 1;
+      const phFree = holidayDates.filter(h => h >= toIsoDate(startDate) && h <= toIsoDate(endDate)).length;
+      document.getElementById('beast-summary').textContent =
+        `${totalDays} calendar days away  ·  ${phFree} public holiday${phFree !== 1 ? 's' : ''} free`;
+
+      document.querySelectorAll('#beast-tabs button').forEach(b => {
+        const on = b.dataset.sc === scenario;
+        b.className = on
+          ? 'px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-600 dark:bg-indigo-500 text-white'
+          : 'px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors';
+      });
+
+      const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      let html = '';
+      const cur = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+      const endMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+
+      while (cur <= endMonth) {
+        const y = cur.getFullYear(), mo = cur.getMonth();
+        const monthLabel = new Date(y, mo, 1).toLocaleString('en-AU', { month:'long', year:'numeric' });
+        const firstDow = (new Date(y, mo, 1).getDay() + 6) % 7; // 0 = Mon
+        const dim = new Date(y, mo + 1, 0).getDate();
+
+        html += `<div>
+          <p style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6b7280;margin-bottom:4px">${monthLabel}</p>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">`;
+        DOW.forEach(d => { html += `<div style="text-align:center;font-size:0.6rem;color:#9ca3af;padding:2px 0">${d}</div>`; });
+        for (let i = 0; i < firstDow; i++) html += '<div></div>';
+        for (let d = 1; d <= dim; d++) {
+          const dt = new Date(y, mo, d);
+          if (dt >= startDate && dt <= endDate) {
+            const type = beastDayType(dt, scenario);
+            html += `<div class="beast-day beast-${type}" title="${BEAST_LABELS[type]}">${d}</div>`;
+          } else {
+            html += `<div style="text-align:center;font-size:0.7rem;padding:0.15rem;color:#d1d5db">${d}</div>`;
+          }
+        }
+        html += '</div></div>';
+        cur.setMonth(mo + 1);
+      }
+      document.getElementById('beast-calendar').innerHTML = html;
+    }
+
+    function buildBeastMode() {
+      if (!_beast) return;
+      const { recIsZero, lslIsZero, fullRecEnd, fullLslEnd, fullRecThenLsl, fullLslThenRec } = _beast;
+      const tabs = [];
+      if (!recIsZero) tabs.push({ label:'Rec Only',    sc:'rec-only', end:fullRecEnd });
+      if (!lslIsZero) tabs.push({ label:'LSL Only',    sc:'lsl-only', end:fullLslEnd });
+      if (!recIsZero && !lslIsZero) {
+        tabs.push({ label:'Rec → LSL', sc:'rec-lsl', end:fullRecThenLsl });
+        tabs.push({ label:'LSL → Rec', sc:'lsl-rec', end:fullLslThenRec });
+      }
+      const container = document.getElementById('beast-tabs');
+      container.innerHTML = tabs.map(t =>
+        `<button data-sc="${t.sc}" class="px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">${t.label}</button>`
+      ).join('');
+      container.querySelectorAll('button').forEach(b => b.addEventListener('click', () => renderBeastCalendar(b.dataset.sc)));
+      // Default: longest scenario
+      const longest = tabs.reduce((best, t) => (!best || t.end > best.end ? t : best), null);
+      if (longest) renderBeastCalendar(longest.sc);
+    }
+
+    const APP_VERSION = '1.8';
+    const BUILD_DATE = '20/08/2026';
     document.getElementById('version-text').textContent = `Version ${APP_VERSION} • ${BUILD_DATE}`;
 
     /* ---- holiday data ---- */
@@ -182,29 +348,31 @@
       return date;
     }
 
-    // Inclusive calendar-day addition (counts the start day).
+    // Directive 10/24 cl. 14.1: full-pay LSL is exclusive of public holidays.
     const addCalendarDaysInclusive = (start, days) => {
       const targetDays = Math.max(0, Number(days) || 0);
       const date = start instanceof Date ? cloneDate(start) : parseLocalDate(start);
       if (!date || targetDays === 0) return date;
 
-      date.setDate(date.getDate() + targetDays - 1); // -1 so 1 day returns same date
+      let count = 0;
+      while (count < targetDays) {
+        if (!holidayDateSet.has(toIsoDate(date))) count++;
+        if (count < targetDays) date.setDate(date.getDate() + 1);
+      }
       return date;
     };
 
+    // Directive 10/24 cl. 15.3(e): half-pay LSL is exclusive of public holidays; each non-holiday = 0.5 LSL days.
     function addLslDaysHalfPay(start, lsl) {
-      // Inclusive half-pay logic: start day counts.
-      const targetHalfUnits = Math.max(0, Number(lsl) || 0) * 2; // entitlement units
+      const targetHalfUnits = Math.max(0, Number(lsl) || 0) * 2;
       const date = start instanceof Date ? cloneDate(start) : parseLocalDate(start);
       if (!date || targetHalfUnits === 0) return date;
 
       let consumed = 0;
       while (consumed < targetHalfUnits) {
-        const iso = toIsoDate(date);
-        consumed += holidayDateSet.has(iso) ? 2 : 1;
+        if (!holidayDateSet.has(toIsoDate(date))) consumed++;
         if (consumed < targetHalfUnits) date.setDate(date.getDate() + 1);
       }
-
       return date;
     }
 
@@ -267,27 +435,37 @@
         return alert(error.message);
       }
 
+      if (rec === 0 && lsl === 0) {
+        return alert('Please enter at least one leave period greater than 0 days.');
+      }
+
+      // Show warning if LSL is below the 7-day minimum period
+      document.getElementById('lsl-warning').classList.toggle('hidden', !(lsl > 0 && lsl < 7));
+
+      const lslIsZero = lsl === 0;
+      const recIsZero = rec === 0;
+
       /* --- FULL PAY CALCS --- */
       const fullRecEnd       = addBusinessDays(startDate, rec);
       const fullLslEnd       = addCalendarDaysInclusive(startDate, lsl);
       const fullRecThenLsl   = runSecondSegment(startDate, fullRecEnd, rec, lsl, addCalendarDaysInclusive);
       const fullLslThenRec   = runSecondSegment(startDate, fullLslEnd, lsl, rec, addBusinessDays);
 
-      document.getElementById('full-rec-end').textContent      = formatDate(fullRecEnd);
-      document.getElementById('full-lsl-end').textContent      = formatDate(fullLslEnd);
+      document.getElementById('full-rec-end').textContent      = recIsZero ? 'N/A' : formatDate(fullRecEnd);
+      document.getElementById('full-lsl-end').textContent      = lslIsZero ? 'N/A' : formatDate(fullLslEnd);
       document.getElementById('full-rec-lsl-end').textContent  = formatDate(fullRecThenLsl);
       document.getElementById('full-lsl-rec-end').textContent  = formatDate(fullLslThenRec);
 
       const fullOptions = [
-        {id:'full-rec-end',      label:'Rec Only',      date:fullRecEnd},
-        {id:'full-lsl-end',      label:'LSL Only',      date:fullLslEnd},
-        {id:'full-rec-lsl-end',  label:'Rec → LSL',     date:fullRecThenLsl},
-        {id:'full-lsl-rec-end',  label:'LSL → Rec',     date:fullLslThenRec},
+        ...(recIsZero ? [] : [{id:'full-rec-end', label:'Rec Only', date:fullRecEnd}]),
+        ...(lslIsZero ? [] : [{id:'full-lsl-end', label:'LSL Only', date:fullLslEnd}]),
+        {id:'full-rec-lsl-end', label:'Rec → LSL', date:fullRecThenLsl},
+        {id:'full-lsl-rec-end', label:'LSL → Rec', date:fullLslThenRec},
       ];
       const latestFull = fullOptions.reduce((max,o) => o.date > max.date ? o : max, fullOptions[0]);
       document.getElementById('full-latest').textContent = formatDate(latestFull.date);
       document.getElementById('full-latest-label').textContent = latestFull.label;
-      clearHighlights(fullOptions.map(o => o.id));
+      clearHighlights(['full-rec-end','full-lsl-end','full-rec-lsl-end','full-lsl-rec-end']);
       highlight(latestFull.id,'ring-indigo-400');
 
       /* --- HALF PAY CALCS --- */
@@ -296,21 +474,21 @@
       const halfRecThenLsl   = runSecondSegment(startDate, halfRecEnd, rec * 2, lsl, addLslDaysHalfPay);
       const halfLslThenRec   = runSecondSegment(startDate, halfLslEnd, lsl, rec * 2, addBusinessDays);
 
-      document.getElementById('half-rec-end').textContent      = formatDate(halfRecEnd);
-      document.getElementById('half-lsl-end').textContent      = formatDate(halfLslEnd);
+      document.getElementById('half-rec-end').textContent      = recIsZero ? 'N/A' : formatDate(halfRecEnd);
+      document.getElementById('half-lsl-end').textContent      = lslIsZero ? 'N/A' : formatDate(halfLslEnd);
       document.getElementById('half-rec-lsl-end').textContent  = formatDate(halfRecThenLsl);
       document.getElementById('half-lsl-rec-end').textContent  = formatDate(halfLslThenRec);
 
       const halfOptions = [
-        {id:'half-rec-end',     label:'Rec Only',     date:halfRecEnd},
-        {id:'half-lsl-end',     label:'LSL Only',     date:halfLslEnd},
-        {id:'half-rec-lsl-end', label:'Rec → LSL',    date:halfRecThenLsl},
-        {id:'half-lsl-rec-end', label:'LSL → Rec',    date:halfLslThenRec},
+        ...(recIsZero ? [] : [{id:'half-rec-end', label:'Rec Only', date:halfRecEnd}]),
+        ...(lslIsZero ? [] : [{id:'half-lsl-end', label:'LSL Only', date:halfLslEnd}]),
+        {id:'half-rec-lsl-end', label:'Rec → LSL', date:halfRecThenLsl},
+        {id:'half-lsl-rec-end', label:'LSL → Rec', date:halfLslThenRec},
       ];
       const latestHalf = halfOptions.reduce((max,o) => o.date > max.date ? o : max, halfOptions[0]);
       document.getElementById('half-latest').textContent = formatDate(latestHalf.date);
       document.getElementById('half-latest-label').textContent = latestHalf.label;
-      clearHighlights(halfOptions.map(o => o.id));
+      clearHighlights(['half-rec-end','half-lsl-end','half-rec-lsl-end','half-lsl-rec-end']);
       highlight(latestHalf.id,'ring-teal-400');
 
       /* --- footer info --- */
@@ -318,6 +496,10 @@
       document.getElementById('holiday-range-list').textContent = holidayMinDate && holidayMaxDate
         ? `${holidayMinDate} to ${holidayMaxDate}`
         : 'Unavailable';
+
+      /* --- beast mode --- */
+      _beast = { startDate, recIsZero, lslIsZero, fullRecEnd, fullLslEnd, fullRecThenLsl, fullLslThenRec };
+      buildBeastMode();
 
       /* reveal results */
       document.getElementById('results').classList.remove('hidden');
